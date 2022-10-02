@@ -1,7 +1,15 @@
 import request from '@/utils/request'
 
+/**
+ * 登录
+ */
 export function login(data) {
-  return request()
+  // 返回一个axios对象 promise对象
+  return request({
+    url: '/sys/login',
+    method: 'post',
+    data
+  })
 }
 
 export function getInfo(token) {
