@@ -17,6 +17,11 @@ router.beforeEach(async function(to, from, next) {
       next('/')
     } else {
       // 不是登录页
+      // 判断是否有用户id
+      if (!store.getters.userId) {
+        // 如果没有id这个值 才会调用 vuex的获取资料的action
+        await store.dispatch('user/getUserInfo')
+      }
       // 直接放行
       next()
     }
