@@ -26,9 +26,7 @@
                   <el-button size="small" type="primary" @click="editRole(row.id)">编辑</el-button>
                   <el-button size="small" type="danger" @click="deleteRole(row.id)">删除</el-button>
                 </template>
-
               </el-table-column>
-
             </el-table>
             <!-- 放置分页组件 -->
             <el-row type="flex" justify="center" align="middle" style="height:60px">
@@ -44,7 +42,6 @@
           <el-tab-pane label="公司信息">
             <el-alert type="info" :show-icon="true" :closable="false" title="显示公司名称、公司地址、公司电话、公司邮箱、公司简介，请谨慎修改" />
             <!-- 右边内容 -->
-            <!-- 并不是所有的表单都需要 model rules -->
             <el-form label-width="120px" style="margin-top:50px">
               <el-form-item label="公司名称">
                 <el-input v-model="formData.name" disabled style="width:400px" />
@@ -63,12 +60,10 @@
               </el-form-item>
             </el-form>
           </el-tab-pane>
-
         </el-tabs>
       </el-card>
     </div>
     <!-- 放置一个弹层组件 -->
-    <!-- close事件 在点击确定的时候会触发 -->
     <el-dialog :title="showTitle ? '新增角色' : '编辑角色'" :visible="showDialog" @close="btnCancel">
       <el-form ref="roleForm" :model="roleForm" :rules="rules" label-width="120px">
         <el-form-item prop="name" label="角色名称">
@@ -88,10 +83,6 @@
     </el-dialog>
     <!-- 放置一个弹层 -->
     <el-dialog title="分配权限" :visible="showPermDialog" @close="btnPermCancel">
-      <!-- 权限是一颗树 -->
-      <!-- 将数据绑定到组件上 -->
-      <!-- check-strictly 如果为true 那表示父子勾选时  不互相关联 如果为false就互相关联 -->
-      <!-- id作为唯一标识 -->
       <el-tree
         ref="permTree"
         :data="permData"
@@ -182,7 +173,7 @@ export default {
       //  提示
       try {
         await this.$confirm('确认删除该角色吗')
-        // 只有点击了确定 才能进入到下方
+        // 点击确定 进入
         await deleteRole(id) // 调用删除接口
         this.getRoleList() // 重新加载数据
         this.$message.success('删除角色成功')
@@ -199,17 +190,17 @@ export default {
       try {
         await this.$refs.roleForm.validate()
         // 只有校验通过的情况下 才会执行await的下方内容
-        // roleForm这个对象有id就是编辑 没有id就是新增
         if (this.roleForm.id) {
+          // 有id就是编辑
           await updateRole(this.roleForm)
         } else {
-          // 新增业务
+          // 没有id就是新增
           await addRole(this.roleForm)
         }
         // 重新拉取数据
         this.getRoleList()
         this.$message.success('操作成功')
-        this.showDialog = false // 关闭弹层  =>  触发el-dialog的事件close事件
+        this.showDialog = false // 关闭弹层
       } catch (error) {
         console.log(error)
       }
@@ -239,8 +230,6 @@ export default {
       this.showPermDialog = true
     },
     async  btnPermOK() {
-      // 调用el-tree的方法
-      // console.log(this.$refs.permTree.getCheckedKeys())
       await assignPerm({ permIds: this.$refs.permTree.getCheckedKeys(), id: this.roleId })
       this.$message.success('分配权限成功')
       this.showPermDialog = false
