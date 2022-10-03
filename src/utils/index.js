@@ -115,3 +115,22 @@ export function param2Obj(url) {
   })
   return obj
 }
+
+// 将列表转化成树形结构数据的方法
+// 递归方法 传入不同的参数 有跳出条件
+export function transListToTreeData(list, rootValue) {
+  var arr = []
+  list.forEach(item => {
+    // 判断是否找到节点
+    if (item.pid === rootValue) {
+      // 找到节点  继续寻找该节点有没有子节点
+      // 返回的数组 是 item的所有的子节点的集合
+      const children = transListToTreeData(list, item.id)
+      if (children.length) {
+        item.children = children
+      }
+      arr.push(item) // 把节点push到数组里面
+    }
+  })
+  return arr
+}
