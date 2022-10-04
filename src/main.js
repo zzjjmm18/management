@@ -12,6 +12,7 @@ import App from './App'
 import store from './store'
 import router from './router'
 import Component from '@/components'
+import Print from 'vue-print-nb'
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -31,6 +32,8 @@ Object.keys(filters).forEach(key => {
 })
 
 Vue.use(Component) // 注册自己的插件
+
+Vue.use(Print) // 注册打印组件
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })
