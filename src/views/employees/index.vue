@@ -33,7 +33,7 @@
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
+              <el-button type="text" size="small" @click="assignRole(row.id)">角色</el-button>
               <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button>
             </template>
           </el-table-column>
@@ -51,17 +51,21 @@
       </el-card>
     </div>
     <add-employee :show-dialog.sync="showDialog" />
+    <!-- 放置角色分配组件 -->
+    <assign-role ref="assignRole" :show-role-dialog.sync="showRoleDialog" :user-id="userId" />
   </div>
 </template>
 
 <script>
 import { getEmployeeList, delEmployee } from '@/api/employees'
 import AddEmployee from './components/add-employee'
+import AssignRole from './components/assign-role'
 import EmployeeEnum from '@/api/constant/employees'
 
 export default {
   components: {
-    AddEmployee
+    AddEmployee,
+    AssignRole
   },
   data() {
     return {
@@ -72,7 +76,9 @@ export default {
         size: 10,
         total: 0 // 总数
       },
-      showDialog: false
+      showDialog: false,
+      showRoleDialog: false, // 分配角色弹层
+      userId: null // 记录当前点击的id
     }
   },
   created() {
@@ -105,6 +111,13 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    async  assignRole(id) {
+      this.userId = id // 记住当前点击的user-id  props传值是异步的 props异步渲染传值
+      // 同步和异步相遇  会先执行同步
+      // 立刻调用获取数据的方法
+      await this.$refs.assignRole.getUserDetailById(id)
+      this.showRoleDialog = true
     }
   }
 }
