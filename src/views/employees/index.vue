@@ -4,8 +4,9 @@
       <page-tools :show-before="true">
         <span slot="before">共{{ page.total }}条记录</span>
         <template slot="after">
-          <el-button size="small" type="warning">导入Excel</el-button>
-          <el-button size="small" type="danger">导出Excel</el-button>
+          <el-button size="small" type="success" @click="$router.push('/import?type=user')">excel导入</el-button>
+          <el-button size="small" type="danger" @click="exportData">普通excel导出</el-button>
+          <el-button size="small" type="info" @click="exportMutiData">复杂表头excel导出</el-button>
           <el-button icon="plus" type="primary" size="small" @click="showDialog = true">新增员工</el-button>
         </template>
       </page-tools>
@@ -58,6 +59,7 @@
 
 <script>
 import { getEmployeeList, delEmployee } from '@/api/employees'
+import { formatDate } from '@/filters'
 import AddEmployee from './components/add-employee'
 import AssignRole from './components/assign-role'
 import EmployeeEnum from '@/api/constant/employees'
@@ -118,6 +120,83 @@ export default {
       // 立刻调用获取数据的方法
       await this.$refs.assignRole.getUserDetailById(id)
       this.showRoleDialog = true
+    },
+    // 导出数据
+    exportData() {
+      // 懒加载模块 => 只有当点击按钮的时候才去加载这个模块
+      const headers = {
+        '姓名': 'username',
+        '手机号': 'mobile',
+        '入职日期': 'timeOfEntry',
+        '聘用形式': 'formOfEmployment',
+        '转正日期': 'correctionTime',
+        '工号': 'workNumber',
+        '部门': 'departmentName'
+      }
+      import('@/vendor/Export2Excel').then(async excel => {
+        // 获取所有的员工列表数据
+        const { rows } = await getEmployeeList({ page: 1, size: this.page.total })
+        // rows是所有的员工列表数据
+        // [{ username: '张三', mobile: 123 }]  => [[ '张三', 123 ]]
+
+        // excel导出的默认对象
+        excel.export_json_to_excel({
+          filename: '人力资源表',
+          header: Object.keys(headers),
+          data: this.formatJSON(headers, rows)
+        })
+      })
+    },
+    // [{ username: '张三', mobile: 123 }]  => [[ '张三', 123 ]]
+    // 数据的顺序是按照headers中key的顺序来的
+    // 格式化json数据
+    formatJSON(headers, rows) {
+      // rows 是一行一行的  =>  [{},{}] => [[],[]]
+      return rows.map(item => {
+        // item {username: '张三', mobile: 123}  现在是对象 => []
+        // ["姓名","手机号"] => [ '张三', '123']
+        return Object.keys(headers).map(key => {
+          // key是中文 headers[key]是英文 // item是 英文 {username: '张三', mobile: 123}
+          if (headers[key] === 'timeOfEntry' || headers[key] === 'correctionTime') {
+            // 如果是日期的话 就需要格式化日期
+            return formatDate(item[headers[key]])
+          } else if (headers[key] === 'formOfEmployment') {
+            // 要把聘用形式转化成文本
+            const obj = EmployeeEnum.hireType.find(o => o.id === item[headers[key]])
+            return obj ? obj.value : '未知'
+          }
+          return item[headers[key]]
+        })
+      })
+      // return rows.map(item => Object.keys(headers).map(key => item[headers[key]]))
+    },
+    exportMutiData() {
+      // 懒加载模块 => 只有当点击按钮的时候才去加载这个模块
+      const headers = {
+        '姓名': 'username',
+        '手机号': 'mobile',
+        '入职日期': 'timeOfEntry',
+        '聘用形式': 'formOfEmployment',
+        '转正日期': 'correctionTime',
+        '工号': 'workNumber',
+        '部门': 'departmentName'
+      }
+      import('@/vendor/Export2Excel').then(async excel => {
+        // 获取所有的员工列表数据
+        const { rows } = await getEmployeeList({ page: 1, size: this.page.total })
+        // rows是所有的员工列表数据
+        // [{ username: '张三', mobile: 123 }]  => [[ '张三', 123 ]]
+
+        // excel导出的默认对象
+        excel.export_json_to_excel({
+          filename: '人力资源表',
+          header: Object.keys(headers),
+          // mutiHeader中表头的长度必须和header的表头长度是对应的 否则报错
+          multiHeader: [['姓名', '主要信息', '', '', '', '', '部门']], // 复杂表头的导出 数组中的一个数组 就是一行表头
+          data: this.formatJSON(headers, rows),
+          merges: ['A1:A2', 'B1:F1', 'G1:G2'] // 合并列  不用区分顺序 只写合并的单元格的顺序号
+        })
+      })
     }
   }
 }
