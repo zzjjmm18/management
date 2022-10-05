@@ -20,7 +20,11 @@ router.beforeEach(async function(to, from, next) {
       // 判断是否有用户id
       if (!store.getters.userId) {
         // 如果没有id这个值 才会调用 vuex的获取资料的action
-        await store.dispatch('user/getUserInfo')
+        const { roles } = await store.dispatch('user/getUserInfo')
+        // routes是当前用户的所拥有的的动态路由的权限
+        const routes = await store.dispatch('permission/filterRoutes', roles.menus)
+        router.addRoutes([...routes, { path: '*', redirect: '/404', hidden: true }])
+        next(to.path)
       }
       // 直接放行
       next()

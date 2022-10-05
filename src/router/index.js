@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+Vue.use(Router)
 // 引入多个模块的规则
 import approvalsRouter from './modules/approvals'
 import departmentsRouter from './modules/departments'
@@ -11,8 +12,6 @@ import salarysRouter from './modules/salarys'
 import settingRouter from './modules/setting'
 import socialRouter from './modules/social'
 import userRouter from './modules/user'
-
-Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
@@ -50,9 +49,9 @@ export const constantRoutes = [
       component: () => import('@/views/import')
     }]
   },
-  userRouter,
+  userRouter
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 // 动态路由
@@ -68,9 +67,10 @@ export const asyncRoutes = [
 ]
 
 const createRouter = () => new Router({
-  // mode: 'history', // require service support
+  mode: 'history', // require service support
+  base: '/manager/',
   scrollBehavior: () => ({ y: 0 }),
-  routes: [...constantRoutes, ...asyncRoutes] // 临时合并所有路由
+  routes: [...constantRoutes] // 动态路由和静态路由的临时合并
 })
 
 const router = createRouter()
